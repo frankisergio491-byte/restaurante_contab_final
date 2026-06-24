@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurante Contab</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+      const API = "http://127.0.0.1:8000/api";
+
+      Vue.createApp({
+        data() {
+          return {
+            pagina: "home",
+            estadoApi: "Conectando...",
+            sesion: null,
+            roles: ["Administrador", "Mesero", "Chef", "Cajero", "Bodeguero", "Cliente"],
+            login: { usuario: "carlos.m", contrasena: "pass123456", codigo: "", pasoCodigo: false, mensaje: "" },
+            recuperacion: { usuario: "", codigo: "", nueva: "", codigoEnviado: false, mensaje: "" },
+            registro: {
+              nombre: "",
+              apellido: "",
+              telefono: "",
+              correo: "",
+              usuario: "",
+              contrasena: "",
+              rol: "Cliente",
+              mensaje: "",
+            },
+            resumen: { sedes: 0, mesas: 0, productos: 0, pedidos: 0 },
+            sedes: [],
+            mesas: [],
+            productos: [],
+            pedidos: [],
+          };
+        },
+        async mounted() {
+          await this.cargarInicio();
+        },
+        methods: {
+          async pedir(ruta, opciones = {}) {
+            const res = await fetch(`${API}${ruta}`, opciones);
+            return res.json();
+          },
+          async cargarInicio() {
+            try {
+              const [sedes, mesas, productos, pedidos] = await Promise.all([
+                this.pedir("/sedes/"),
+                this.pedir("/mesas/"),
+                this.pedir("/productos/"),
+                this.pedir("/pedidos/"),
+              ]);
+              this.sedes = sedes;
+              this.mesas = mesas;
+              this.productos = productos;
+              this.pedidos = pedidos;
+              this.resumen = {
+                sedes: sedes.length,
+                mesas: mesas.length,
+                productos: productos.length,
+                pedidos: pedidos.length,
+              };
+              this.estadoApi = "Backend y MySQL conectados";
+            } catch (error) {
+              this.estadoApi = "No hay conexion con el backend";
+            }
+          },
+          async cambiar(pagina) {
+            this.pagina = pagina;
+            if (pagina === "home") await this.cargarInicio();
+            if (pagina === "sedes") this.sedes = await this.pedir("/sedes/");
+            if (pagina === "mesas") this.mesas = await this.pedir("/mesas/");
+            if (pagina === "productos") this.productos = await this.pedir("/productos/");
+            if (pagina === "pedidos") this.pedidos = await this.pedir("/pedidos/");
+          },
+          async iniciarSesion() {
+            try {
+              const datos = await this.pedir("/login/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  usuario: this.login.usuario,
+                  contrasena: this.login.contrasena,
+                }),
+              });
+              this.login.mensaje = datos.mensaje;
+              this.login.pasoCodigo = !!datos.requiere_codigo;
+              this.sesion = null;
+            } catch (error) {
+              this.login.mensaje = "No se pudo conectar con el backend";
+              this.sesion = null;
+            }
+          },
+          async verificarCodigo() {
+            try {
+              const datos = await this.pedir("/verificar-login/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  usuario: this.login.usuario,
+                  codigo: this.login.codigo,
+                }),
+              });
+              this.login.mensaje = datos.mensaje;
+              this.sesion = datos.ok ? datos : null;
+              if (datos.ok) this.login.pasoCodigo = false;
+            } catch (error) {
+              this.login.mensaje = "Codigo invalido o vencido";
+              this.sesion = null;
+            }
+          },
+          async solicitarRecuperacion() {
+            try {
+              const datos = await this.pedir("/solicitar-recuperacion/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usuario: this.recuperacion.usuario }),
+              });
+              this.recuperacion.mensaje = datos.mensaje;
+              this.recuperacion.codigoEnviado = !!datos.ok;
+            } catch (error) {
+              this.recuperacion.mensaje = "No se pudo enviar el codigo";
+            }
+          },
+          async cambiarContrasena() {
+            try {
+              const datos = await this.pedir("/cambiar-contrasena/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  usuario: this.recuperacion.usuario,
+                  codigo: this.recuperacion.codigo,
+                  nueva_contrasena: this.recuperacion.nueva,
+                }),
+              });
+              this.recuperacion.mensaje = datos.mensaje;
+              if (datos.ok) {
+                this.login.usuario = this.recuperacion.usuario;
+                this.login.contrasena = "";
+                this.login.pasoCodigo = false;
+                this.pagina = "login";
+              }
+            } catch (error) {
+              this.recuperacion.mensaje = "Codigo invalido o vencido";
+            }
+          },
+          async registrar() {
+            try {
+              const datos = await this.pedir("/registro/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  nombre: this.registro.nombre,
+                  apellido: this.registro.apellido,
+                  telefono: this.registro.telefono,
+                  correo: this.registro.correo,
+                  usuario: this.registro.usuario,
+                  contrasena: this.registro.contrasena,
+                  rol: this.registro.rol,
+                }),
+              });
+              this.registro.mensaje = datos.mensaje || (datos.ok ? "Registro guardado en MySQL" : "No se pudo registrar");
+              if (datos.ok) {
+                this.registro = {
+                  nombre: "",
+                  apellido: "",
+                  telefono: "",
+                  correo: "",
+                  usuario: "",
+                  contrasena: "",
+                  rol: "Cliente",
+                  mensaje: this.registro.mensaje,
+                };
+                await this.cargarInicio();
+              }
+            } catch (error) {
+              this.registro.mensaje = "No se pudo guardar. Revisa que el telefono no este repetido.";
+            }
+          },
+        },
+        template: `
+          <div class="layout">
+            <aside class="barra">
+              <div class="marca">
+                <span class="marca-icono">RC</span>
+                <h1>Restaurante Contab</h1>
+                <p>Gestion de restaurante</p>
+              </div>
+              <nav>
+                <a href="#" :class="{ activo: pagina === 'home' }" @click.prevent="cambiar('home')">Home</a>
+                <a href="#" :class="{ activo: pagina === 'login' }" @click.prevent="cambiar('login')">Inicio de sesion</a>
+                <a href="#" :class="{ activo: pagina === 'registro' }" @click.prevent="cambiar('registro')">Registro</a>
+                <a href="#" :class="{ activo: pagina === 'recuperar' }" @click.prevent="cambiar('recuperar')">Recuperar clave</a>
+                <a href="#" :class="{ activo: pagina === 'sedes' }" @click.prevent="cambiar('sedes')">Sedes</a>
+                <a href="#" :class="{ activo: pagina === 'mesas' }" @click.prevent="cambiar('mesas')">Mesas</a>
+                <a href="#" :class="{ activo: pagina === 'productos' }" @click.prevent="cambiar('productos')">Productos</a>
+                <a href="#" :class="{ activo: pagina === 'pedidos' }" @click.prevent="cambiar('pedidos')">Pedidos</a>
+              </nav>
+            </aside>
+
+            <main class="contenido">
+              <div class="encabezado">
+                <div>
+                  <h2>{{ pagina === 'home' ? 'Panel principal' : pagina }}</h2>
+                  <p>Sistema conectado a la base de datos cadena_restaurantes.</p>
+                </div>
+                <span class="estado-api">{{ estadoApi }}</span>
+              </div>
+
+              <section v-if="pagina === 'home'">
+                <div class="hero-restaurante">
+                  <div>
+                    <span class="eyebrow">Panel operativo</span>
+                    <h3>Control de sedes, mesas y pedidos</h3>
+                    <p>Consulta la operacion del restaurante, revisa productos disponibles y valida accesos con codigo enviado al correo.</p>
+                  </div>
+                </div>
+                <div class="grid-resumen">
+                  <article class="tarjeta"><span>Sedes</span><strong>{{ resumen.sedes }}</strong></article>
+                  <article class="tarjeta"><span>Mesas</span><strong>{{ resumen.mesas }}</strong></article>
+                  <article class="tarjeta"><span>Productos</span><strong>{{ resumen.productos }}</strong></article>
+                  <article class="tarjeta"><span>Pedidos</span><strong>{{ resumen.pedidos }}</strong></article>
+                </div>
+                <div class="panel">
+                  <h3>Inicio</h3>
+                  <p>Desde aqui se revisan los modulos principales del restaurante: sedes, mesas, productos y pedidos.</p>
+                  <div class="acciones">
+                    <a class="boton" href="#" @click.prevent="cambiar('login')">Abrir inicio de sesion</a>
+                    <a class="boton secundario" href="#" @click.prevent="cambiar('registro')">Abrir registro</a>
+                  </div>
+                </div>
+              </section>
+
+              <form v-if="pagina === 'login' && !login.pasoCodigo" class="panel formulario form-acceso" @submit.prevent="iniciarSesion">
+                <h3>Inicio de sesion</h3>
+                <p>Ingresa tus datos. Si son correctos, recibiras un codigo de 6 digitos en tu correo.</p>
+                <label>Usuario <input v-model="login.usuario" type="text" /></label>
+                <label>Contrasena <input v-model="login.contrasena" type="password" /></label>
+                <button>Enviar codigo</button>
+                <a href="#" @click.prevent="cambiar('recuperar')">Olvide mi contrasena</a>
+                <p class="mensaje">{{ login.mensaje }}</p>
+                <div v-if="sesion" class="sesion">
+                  <strong>Usuario autenticado</strong>
+                  <span>{{ sesion.empleado }}</span>
+                  <span>Rol: {{ sesion.rol }}</span>
+                </div>
+              </form>
+
+              <form v-if="pagina === 'login' && login.pasoCodigo" class="panel formulario form-acceso" @submit.prevent="verificarCodigo">
+                <h3>Verificacion en 2 pasos</h3>
+                <p>Escribe el codigo enviado al correo registrado del usuario.</p>
+                <label>Codigo <input v-model="login.codigo" type="text" maxlength="6" placeholder="000000" /></label>
+                <button>Verificar codigo</button>
+                <p class="mensaje">{{ login.mensaje }}</p>
+              </form>
+
+              <section v-if="pagina === 'recuperar'" class="panel formulario form-acceso">
+                <h3>Recuperar contrasena</h3>
+                <p>Escribe tu usuario. Enviaremos un codigo al correo registrado.</p>
+                <label>Usuario <input v-model="recuperacion.usuario" type="text" required /></label>
+                <button @click.prevent="solicitarRecuperacion">Enviar codigo</button>
+                <div v-if="recuperacion.codigoEnviado" class="formulario">
+                  <label>Codigo recibido <input v-model="recuperacion.codigo" type="text" maxlength="6" /></label>
+                  <label>Nueva contrasena <input v-model="recuperacion.nueva" type="password" /></label>
+                  <button @click.prevent="cambiarContrasena">Cambiar contrasena</button>
+                </div>
+                <p class="mensaje">{{ recuperacion.mensaje }}</p>
+              </section>
+
+              <form v-if="pagina === 'registro'" class="panel formulario form-acceso" @submit.prevent="registrar">
+                <h3>Registro de usuario</h3>
+                <p>Crea el usuario y asigna su rol. El registro envia confirmacion al correo y el login envia codigo de acceso.</p>
+                <label>Nombre <input v-model="registro.nombre" type="text" required /></label>
+                <label>Apellido <input v-model="registro.apellido" type="text" required /></label>
+                <label>Telefono <input v-model="registro.telefono" type="text" required /></label>
+                <label>Correo <input v-model="registro.correo" type="email" required /></label>
+                <label>Usuario <input v-model="registro.usuario" type="text" required /></label>
+                <label>Contrasena <input v-model="registro.contrasena" type="password" required /></label>
+                <label>Rol
+                  <select v-model="registro.rol" required>
+                    <option v-for="rol in roles" :key="rol" :value="rol">{{ rol }}</option>
+                  </select>
+                </label>
+                <button>Guardar registro</button>
+                <p class="mensaje">{{ registro.mensaje }}</p>
+              </form>
+
+              <section v-if="pagina === 'sedes'" class="panel">
+                <h3>Sedes</h3>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead><tr><th>ID</th><th>Nombre</th><th>Municipio</th><th>Telefono</th><th>Capacidad</th></tr></thead>
+                    <tbody>
+                      <tr v-for="sede in sedes" :key="sede.id">
+                        <td>{{ sede.id }}</td><td>{{ sede.nombre }}</td><td>{{ sede.municipio }}</td><td>{{ sede.telefono }}</td><td>{{ sede.capacidad }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section v-if="pagina === 'mesas'" class="panel">
+                <h3>Mesas</h3>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead><tr><th>ID</th><th>Numero</th><th>Capacidad</th><th>Estado</th><th>Sede</th></tr></thead>
+                    <tbody>
+                      <tr v-for="mesa in mesas" :key="mesa.id">
+                        <td>{{ mesa.id }}</td><td>{{ mesa.numero }}</td><td>{{ mesa.capacidad }}</td><td><span class="badge">{{ mesa.estado }}</span></td><td>{{ mesa.sede }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section v-if="pagina === 'productos'" class="panel">
+                <h3>Productos</h3>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead><tr><th>ID</th><th>Producto</th><th>Categoria</th><th>Precio</th><th>Estado</th></tr></thead>
+                    <tbody>
+                      <tr v-for="producto in productos" :key="producto.id">
+                        <td>{{ producto.id }}</td><td>{{ producto.nombre }}</td><td>{{ producto.categoria }}</td><td>$ {{ producto.precio }}</td><td><span class="badge">{{ producto.disponibilidad }}</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section v-if="pagina === 'pedidos'" class="panel">
+                <h3>Pedidos</h3>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead><tr><th>ID</th><th>Mesa</th><th>Empleado</th><th>Cliente</th><th>Pago</th><th>Propina</th></tr></thead>
+                    <tbody>
+                      <tr v-for="pedido in pedidos" :key="pedido.id">
+                        <td>{{ pedido.id }}</td><td>{{ pedido.mesa }}</td><td>{{ pedido.empleado }}</td><td>{{ pedido.cliente }}</td><td>{{ pedido.metodo_pago }}</td><td>$ {{ pedido.propina }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </main>
+          </div>
+        `,
+      }).mount("#app");
+    </script>
+  </body>
+</html>

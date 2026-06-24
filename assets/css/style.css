@@ -1,0 +1,316 @@
+:root {
+  --fondo: #f7f1e8;
+  --panel: #ffffff;
+  --texto: #2a211c;
+  --muted: #74665b;
+  --linea: #e1d2c3;
+  --brand: #7b2d1f;
+  --brand-2: #b45f2a;
+  --ok: #2f7d46;
+  --warn: #a15c00;
+  --vino: #4b1712;
+  --crema: #fff8ee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background:
+    linear-gradient(rgba(247, 241, 232, 0.92), rgba(247, 241, 232, 0.92)),
+    radial-gradient(circle at top left, #e3b26f, transparent 34%),
+    var(--fondo);
+  color: var(--texto);
+}
+
+.layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+}
+
+.barra {
+  background: linear-gradient(180deg, #3a100c, #1f0f0d);
+  color: white;
+  padding: 22px 18px;
+  box-shadow: 8px 0 24px rgba(58, 16, 12, 0.18);
+}
+
+.marca {
+  margin-bottom: 26px;
+  display: grid;
+  gap: 8px;
+}
+
+.marca-icono {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d89b45;
+  color: #2b120d;
+  font-weight: bold;
+  border: 2px solid #f5d6a5;
+}
+
+.marca h1 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.marca p {
+  margin: 6px 0 0;
+  color: #f1c98e;
+  font-size: 13px;
+}
+
+.barra nav {
+  display: grid;
+  gap: 8px;
+}
+
+.barra a {
+  color: #fff7ee;
+  text-decoration: none;
+  padding: 11px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.barra a:hover,
+.barra a.activo {
+  background: rgba(216, 155, 69, 0.18);
+  border-color: #b45f2a;
+}
+
+.contenido {
+  padding: 28px;
+}
+
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.encabezado h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.encabezado p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.estado-api {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #e8f5ee;
+  color: var(--ok);
+  font-size: 13px;
+  border: 1px solid #b8dec8;
+}
+
+.hero-restaurante {
+  min-height: 190px;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 18px;
+  padding: 24px;
+  border-radius: 10px;
+  color: white;
+  background:
+    linear-gradient(90deg, rgba(58, 16, 12, 0.92), rgba(123, 45, 31, 0.62)),
+    url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80");
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #6d2a1f;
+}
+
+.hero-restaurante h3 {
+  margin: 7px 0;
+  max-width: 620px;
+  font-size: 30px;
+}
+
+.hero-restaurante p {
+  max-width: 650px;
+  margin: 0;
+  color: #ffe9cc;
+}
+
+.eyebrow {
+  color: #f4c06a;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.grid-resumen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.tarjeta {
+  background: linear-gradient(180deg, #fffaf3, #ffffff);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 16px;
+  border-top: 4px solid var(--brand-2);
+}
+
+.tarjeta span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tarjeta strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 26px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.panel h3 {
+  margin: 0 0 12px;
+}
+
+.acciones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.boton,
+button {
+  background: var(--brand);
+  color: white;
+  border: 0;
+  border-radius: 6px;
+  padding: 11px 14px;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover,
+.boton:hover {
+  background: #5e2118;
+}
+
+.boton.secundario {
+  background: var(--brand-2);
+}
+
+.formulario {
+  display: grid;
+  gap: 12px;
+  max-width: 440px;
+}
+
+.form-acceso {
+  border-top: 5px solid var(--brand-2);
+  box-shadow: 0 18px 38px rgba(75, 23, 18, 0.08);
+}
+
+.formulario label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #b9c3cc;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.mensaje {
+  color: var(--brand);
+  font-weight: bold;
+}
+
+.sesion {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #b8dec8;
+  background: #e8f5ee;
+  border-radius: 8px;
+  color: #145c35;
+}
+
+.tabla-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--linea);
+  padding: 11px 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background: #eef3f5;
+  color: #344054;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef6f0;
+  color: var(--ok);
+  border: 1px solid #c7e6d0;
+  font-size: 12px;
+}
+
+@media (max-width: 850px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-resumen {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .contenido {
+    padding: 18px;
+  }
+
+  .grid-resumen {
+    grid-template-columns: 1fr;
+  }
+}
