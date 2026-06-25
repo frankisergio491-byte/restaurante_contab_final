@@ -63,6 +63,24 @@ def clientes(request):
     return respuesta(data)
 
 
+def usuarios(request):
+    data = [
+        {
+            "id": usuario.id_usu_pk,
+            "usuario": usuario.use_usu,
+            "estado": usuario.est_usu,
+            "intentos_fallidos": usuario.intentos_fallidos,
+            "rol": usuario.empleado.car_emp,
+            "empleado": f"{usuario.empleado.nom_emp} {usuario.empleado.ape_emp}",
+            "telefono": usuario.empleado.tel_emp,
+            "correo": usuario.empleado.ema_emp,
+            "sede": usuario.empleado.sede.nom_sed,
+        }
+        for usuario in Usuario.objects.select_related("empleado", "empleado__sede").order_by("-id_usu_pk")
+    ]
+    return respuesta(data)
+
+
 def mesas(request):
     data = [
         {

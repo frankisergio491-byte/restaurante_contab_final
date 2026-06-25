@@ -34,6 +34,7 @@
             },
             resumen: { sedes: 0, mesas: 0, productos: 0, pedidos: 0 },
             sedes: [],
+            usuarios: [],
             mesas: [],
             productos: [],
             pedidos: [],
@@ -73,6 +74,7 @@
           async cambiar(pagina) {
             this.pagina = pagina;
             if (pagina === "home") await this.cargarInicio();
+            if (pagina === "usuarios") this.usuarios = await this.pedir("/usuarios/");
             if (pagina === "sedes") this.sedes = await this.pedir("/sedes/");
             if (pagina === "mesas") this.mesas = await this.pedir("/mesas/");
             if (pagina === "productos") this.productos = await this.pedir("/productos/");
@@ -177,6 +179,7 @@
                   mensaje: this.registro.mensaje,
                 };
                 await this.cargarInicio();
+                this.usuarios = await this.pedir("/usuarios/");
               }
             } catch (error) {
               this.registro.mensaje = "No se pudo guardar. Revisa que el telefono no este repetido.";
@@ -196,6 +199,7 @@
                 <a href="#" :class="{ activo: pagina === 'login' }" @click.prevent="cambiar('login')">Inicio de sesion</a>
                 <a href="#" :class="{ activo: pagina === 'registro' }" @click.prevent="cambiar('registro')">Registro</a>
                 <a href="#" :class="{ activo: pagina === 'recuperar' }" @click.prevent="cambiar('recuperar')">Recuperar clave</a>
+                <a href="#" :class="{ activo: pagina === 'usuarios' }" @click.prevent="cambiar('usuarios')">Usuarios</a>
                 <a href="#" :class="{ activo: pagina === 'sedes' }" @click.prevent="cambiar('sedes')">Sedes</a>
                 <a href="#" :class="{ activo: pagina === 'mesas' }" @click.prevent="cambiar('mesas')">Mesas</a>
                 <a href="#" :class="{ activo: pagina === 'productos' }" @click.prevent="cambiar('productos')">Productos</a>
@@ -289,6 +293,39 @@
                 <button>Guardar registro</button>
                 <p class="mensaje">{{ registro.mensaje }}</p>
               </form>
+
+              <section v-if="pagina === 'usuarios'" class="panel">
+                <h3>Usuarios registrados</h3>
+                <p>Estos registros vienen directamente de MySQL. Si creas un usuario en Registro, debe aparecer aqui.</p>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Empleado</th>
+                        <th>Rol</th>
+                        <th>Correo</th>
+                        <th>Telefono</th>
+                        <th>Estado</th>
+                        <th>Intentos</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="usuario in usuarios" :key="usuario.id">
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.usuario }}</td>
+                        <td>{{ usuario.empleado }}</td>
+                        <td>{{ usuario.rol }}</td>
+                        <td>{{ usuario.correo }}</td>
+                        <td>{{ usuario.telefono }}</td>
+                        <td><span class="badge">{{ usuario.estado }}</span></td>
+                        <td>{{ usuario.intentos_fallidos }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
               <section v-if="pagina === 'sedes'" class="panel">
                 <h3>Sedes</h3>
