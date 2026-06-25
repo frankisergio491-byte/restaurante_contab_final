@@ -43,6 +43,24 @@ Para revisar en local con MySQL:
 4. Abrir `iniciar_backend.bat`.
 5. Abrir `abrir_frontend_local.bat`.
 
+Para abrir la pagina desde XAMPP:
+
+1. Abrir XAMPP.
+2. Prender `Apache` y `MySQL`.
+3. Abrir `publicar_xampp.bat`.
+4. Abrir `iniciar_backend.bat`.
+5. Entrar en el navegador a:
+
+```text
+http://localhost/restaurante_contab/
+```
+
+XAMPP sirve la pagina, pero Django sigue siendo necesario para la API en:
+
+```text
+http://localhost:8000/api
+```
+
 El backend crea/importa la base `cadena_restaurantes` desde `database.sql` solo si no existe. Si la base ya existe, no borra usuarios.
 
 Correo y seguridad:
@@ -65,6 +83,12 @@ Frontend local:
 
 ```text
 frontend_local.html
+```
+
+Frontend desde XAMPP:
+
+```text
+http://localhost/restaurante_contab/
 ```
 
 Si tienes Node.js instalado, tambien puedes abrir `iniciar_frontend.bat` y entrar a:
