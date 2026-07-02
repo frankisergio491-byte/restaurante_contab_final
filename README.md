@@ -61,6 +61,22 @@ XAMPP sirve la pagina, pero Django sigue siendo necesario para la API en:
 http://localhost:8000/api
 ```
 
+Para abrir todo desde la terminal:
+
+1. Abrir CMD o PowerShell.
+2. Ejecutar:
+
+```bat
+cd C:\Users\Usuario\Downloads\restaurante_contab
+abrir_desde_terminal.bat
+```
+
+Este archivo publica el frontend en XAMPP, inicia Apache, inicia MySQL, prende el backend Django y abre la pagina:
+
+```text
+http://localhost/restaurante_contab/
+```
+
 El backend crea/importa la base `cadena_restaurantes` desde `database.sql` solo si no existe. Si la base ya existe, no borra usuarios.
 
 Correo y seguridad:

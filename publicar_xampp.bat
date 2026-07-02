@@ -15,4 +15,4 @@ xcopy "%~dp0assets" "%DESTINO%\assets" /E /I /Y >nul
 echo Frontend publicado en XAMPP.
 echo Abre: http://localhost/restaurante_contab/
 echo Recuerda iniciar tambien el backend con iniciar_backend.bat
-pause
+if /I "%~1" NEQ "/quiet" pause
